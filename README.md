@@ -4,12 +4,12 @@
     </a>
 </h2>
 <h2 align="center">
-   NETWORK PROGRAMMING
+    XÂY DỰNG PHẦN MỀM QUẢN LÝ SINH VIÊN THÔNG QUA GIAO THỨC RMI
 </h2>
 <div align="center">
     <p align="center">
         <img src="docs/aiotlab_logo.png" alt="AIoTLab Logo" width="170"/>
-        <img src="docs/fitdnu_logo.png" alt="AIoTLab Logo" width="180"/>
+        <img src="docs/fitdnu_logo.png" alt="FIT DNU Logo" width="180"/>
         <img src="docs/dnu_logo.png" alt="DaiNam University Logo" width="200"/>
     </p>
 
@@ -19,17 +19,76 @@
 
 </div>
 
+---
+
 ## 📖 1. Giới thiệu
-Học phần trang bị cho người học những kiến thức nền tảng của lập trình mạng và các kỹ năng cần thiết để thiết kế và cài đặt các ứng dụng mạng và các chuẩn ở mức ứng dụng dựa trên mô hình Client/Server, có sử dụng các giao tiếp chương trình dựa trên Sockets. Kết thúc học phần, sinh viên có thể viết các chương trình ứng dụng mạng với giao thức tầng ứng dụng tự thiết kế.
+Đề tài minh họa việc xây dựng **hệ thống quản lý sinh viên** theo mô hình **Client–Server** sử dụng:
+- **Java RMI (Remote Method Invocation)** để gọi phương thức từ xa.
+- **Java Swing** để xây dựng giao diện trực quan cho người dùng.
+- **File I/O + Serialization** để lưu trữ dữ liệu sinh viên thay vì dùng cơ sở dữ liệu.
 
-## 🔧 2. Ngôn ngữ lập trình sử dụng: [![Java](https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=java&logoColor=white)](https://www.java.com/)
-
-## 🚀 3. Các project đã thực hiện
-
-### [Khoá 16](./docs/projects/K16/README.md)
-
-## 📝 4. License
-
-© 2025 AIoTLab, Faculty of Information Technology, DaiNam University. All rights reserved.
+Chức năng chính:
+- Thêm, sửa, xóa, tìm kiếm và hiển thị danh sách sinh viên.
+- Quản lý thông tin: mã sinh viên, họ tên, ngày sinh, lớp, khoa, số điện thoại, email, quê quán.
+- Hỗ trợ nhiều client cùng kết nối đến server.
 
 ---
+
+## 🔧 2. Công nghệ sử dụng
+- [![Java](https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=java&logoColor=white)](https://www.java.com/)  
+- **Java RMI** – gọi phương thức từ xa, xây dựng ứng dụng phân tán.  
+- **Java Swing** – thiết kế giao diện người dùng trực quan.  
+- **File I/O + Serialization** – lưu trữ dữ liệu sinh viên vào file.  
+- **Multithreading** – xử lý đồng thời nhiều kết nối client, đồng bộ dữ liệu bằng `synchronized`.  
+- IDE khuyến nghị: Eclipse / IntelliJ IDEA
+
+---
+
+## 🚀 3. Hình ảnh giao diện
+<p align="center">
+  <img src="docs/screenshot_main.png" alt="Main UI" width="700"/>
+  <br/>
+  <em>Giao diện chính quản lý sinh viên</em>
+</p>
+
+---
+
+## 📝 4. Hướng dẫn cài đặt và sử dụng
+
+### Bước 1: Clone project
+```bash
+git clone https://github.com/your-repo/StudentManagementRMI.git
+cd StudentManagementRMI
+```
+
+### Bước 2: Chạy Server
+```bash
+cd server
+javac *.java
+java server.ServerMain
+```
+
+Server khởi động trên cổng `1099` với dịch vụ `StudentService`.
+
+### Bước 3: Chạy Client
+```bash
+cd client
+javac *.java
+java client.ClientMain
+```
+
+- Client mặc định kết nối `localhost`.  
+- Nếu server chạy trên máy khác:  
+  ```bash
+  java client.ClientMain 192.168.x.x
+  ```
+
+---
+### Thông tin liên hệ:
+Họ tên: Nguyễn Hữu Huy.
+
+Lớp: CNTT 16-01.
+
+Email: nguyenhuuhuy489@gmail.com.
+
+© 2025 AIoTLab, Faculty of Information Technology, DaiNam University. All rights reserved.
