@@ -5,7 +5,7 @@
 </h2>
 
 <h2 align="center">
-    XÂY DỰNG PHẦN MỀM QUẢN LÝ SINH VIÊN THÔNG QUA GIAO THỨC RMI
+    HỆ THỐNG QUẢN LÝ SINH VIÊN BẰNG RMI
 </h2>
 
 <div align="center">
