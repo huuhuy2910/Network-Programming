@@ -102,7 +102,7 @@
 
 ### 🔹 Bước 1: Clone project
 ```bash
-git clone https://github.com/your-repo/StudentManagementRMI.git
+git clone gh repo clone huuhuy2910/Network-Programming/BT2.git
 cd StudentManagementRMI
 ````
 
