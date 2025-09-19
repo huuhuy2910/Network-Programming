@@ -1,0 +1,83 @@
+package vn.edu.app.client.ui;
+
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.client.util.UIUtils;
+import vn.edu.app.common.dto.UserDTO;
+import vn.edu.app.common.remote.AuthService;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+
+public class LoginFrame extends JFrame {
+    private JTextField tfUsername = new JTextField(20);
+    private JPasswordField tfPassword = new JPasswordField(20);
+
+    public LoginFrame() {
+        setTitle("Student Management - Login");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(430, 260);
+        setResizable(false);
+        setLocationRelativeTo(null);
+
+        JPanel root = new JPanel(new BorderLayout(10,10));
+        root.setBorder(BorderFactory.createEmptyBorder(18,18,18,18));
+        root.setBackground(new Color(244,247,252));
+
+        JLabel logo = new JLabel(UIUtils.icon("icons/login.png", 52, 52));
+        logo.setHorizontalAlignment(SwingConstants.CENTER);
+        root.add(logo, BorderLayout.NORTH);
+
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
+        GridBagConstraints g = new GridBagConstraints();
+        g.insets = new Insets(8,8,8,8);
+        g.fill = GridBagConstraints.HORIZONTAL;
+
+        g.gridx=0; g.gridy=0; form.add(new JLabel(UIUtils.icon("icons/user.png", 24, 24)), g);
+        g.gridx=1; form.add(tfUsername, g);
+
+        g.gridx=0; g.gridy=1; form.add(new JLabel(UIUtils.icon("icons/password.png", 24, 24)), g);
+        g.gridx=1; form.add(tfPassword, g);
+
+        root.add(form, BorderLayout.CENTER);
+
+        JPanel actions = new JPanel();
+        actions.setOpaque(false);
+        JButton btnLogin = new JButton("Login", UIUtils.icon("icons/login_btn.png", 20,20));
+        JButton btnExit  = new JButton("Exit",  UIUtils.icon("icons/exit.png", 20,20));
+        actions.add(btnLogin); actions.add(btnExit);
+        root.add(actions, BorderLayout.SOUTH);
+
+        setContentPane(root);
+
+        btnLogin.addActionListener(this::doLogin);
+        btnExit.addActionListener(e -> System.exit(0));
+        getRootPane().setDefaultButton(btnLogin);
+    }
+
+    private void doLogin(ActionEvent e) {
+        try {
+            AuthService auth = RMIConnector.auth();
+            String u = tfUsername.getText().trim();
+            String p = new String(tfPassword.getPassword());
+            if (u.isEmpty() || p.isEmpty()) { UIUtils.error(this, "Please enter username & password"); return; }
+
+            UserDTO user = auth.login(u,p);
+            if (user != null) {
+                UIUtils.info(this, "Welcome " + user.getUsername());
+                new MainFrame(user).setVisible(true);
+                dispose();
+            } else {
+                UIUtils.error(this, "Invalid username or password");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            UIUtils.error(this, "Connection error: " + ex.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+    }
+}

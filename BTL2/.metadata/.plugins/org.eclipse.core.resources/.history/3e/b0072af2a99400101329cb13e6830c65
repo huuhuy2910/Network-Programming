@@ -1,0 +1,40 @@
+package vn.edu.app.server.service;
+
+import vn.edu.app.common.dto.UserDTO;
+import vn.edu.app.common.remote.AuthService;
+import vn.edu.app.server.dao.UserDAO;
+import vn.edu.app.server.util.PasswordUtil;
+
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.Optional;
+
+public class AuthServiceImpl extends UnicastRemoteObject implements AuthService {
+    private final UserDAO userDAO;
+
+    public AuthServiceImpl(UserDAO userDAO) throws RemoteException {
+        super();
+        this.userDAO = userDAO;
+    }
+
+    @Override
+    public UserDTO login(String username, String password) throws RemoteException {
+        Optional<UserDAO.UserRecord> opt = userDAO.findByUsername(username);
+        if (opt.isEmpty()) return null;
+        var u = opt.get();
+        if (PasswordUtil.verify(password, u.passwordHash)) {
+            return new UserDTO(u.username, u.role, u.studentIdOrNull);
+        }
+        return null;
+    }
+
+    @Override
+    public boolean changePassword(String username, String oldPass, String newPass) throws RemoteException {
+        Optional<UserDAO.UserRecord> opt = userDAO.findByUsername(username);
+        if (opt.isEmpty()) return false;
+        var u = opt.get();
+        if (!PasswordUtil.verify(oldPass, u.passwordHash)) return false;
+        String newHash = PasswordUtil.hash(newPass);
+        return userDAO.updatePassword(username, newHash);
+    }
+}

@@ -1,0 +1,107 @@
+package vn.edu.app.client.ui;
+
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.common.dto.UserDTO;
+import vn.edu.app.common.remote.AuthService;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+
+public class LoginFrame extends JFrame {
+    private JTextField tfUsername;
+    private JPasswordField tfPassword;
+    private JButton btnLogin;
+    private JButton btnExit;
+
+    public LoginFrame() {
+        setTitle("Student Management - Login");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(420, 260);
+        setLocationRelativeTo(null);
+        setResizable(false);
+
+        // Panel chính
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Logo trên cùng (32x32)
+        JLabel lblLogo = new JLabel(loadIcon("icons/login.png", 48, 48));
+        lblLogo.setHorizontalAlignment(SwingConstants.CENTER);
+        mainPanel.add(lblLogo, BorderLayout.NORTH);
+
+        // Panel input
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        tfUsername = new JTextField(20);
+        tfPassword = new JPasswordField(20);
+
+        gbc.gridx = 0; gbc.gridy = 0;
+        formPanel.add(new JLabel(loadIcon("icons/user.png", 24, 24)), gbc);
+        gbc.gridx = 1;
+        formPanel.add(tfUsername, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 1;
+        formPanel.add(new JLabel(loadIcon("icons/password.png", 24, 24)), gbc);
+        gbc.gridx = 1;
+        formPanel.add(tfPassword, gbc);
+
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+
+        // Panel nút
+        JPanel buttonPanel = new JPanel();
+        btnLogin = new JButton("Login", loadIcon("icons/login_btn.png", 20, 20));
+        btnExit = new JButton("Exit", loadIcon("icons/exit.png", 20, 20));
+
+        buttonPanel.add(btnLogin);
+        buttonPanel.add(btnExit);
+
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        add(mainPanel);
+
+        // Sự kiện
+        btnLogin.addActionListener(this::doLogin);
+        btnExit.addActionListener(e -> System.exit(0));
+    }
+
+    private void doLogin(ActionEvent e) {
+        try {
+            AuthService auth = RMIConnector.getAuthService();
+            String username = tfUsername.getText().trim();
+            String password = new String(tfPassword.getPassword());
+
+            UserDTO user = auth.login(username, password);
+            if (user != null) {
+                JOptionPane.showMessageDialog(this, "Welcome " + user.getUsername(),
+                        "Login Successful", JOptionPane.INFORMATION_MESSAGE,
+                        loadIcon("icons/success.png", 32, 32));
+                // TODO: mở MainFrame(user)
+                dispose();
+            } else {
+                JOptionPane.showMessageDialog(this, "Invalid username or password",
+                        "Login Failed", JOptionPane.ERROR_MESSAGE,
+                        loadIcon("icons/error.png", 32, 32));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Connection error: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE,
+                    loadIcon("icons/error.png", 32, 32));
+        }
+    }
+
+    // Helper load và scale icon
+    private ImageIcon loadIcon(String path, int w, int h) {
+        ImageIcon icon = new ImageIcon(path);
+        Image img = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+        return new ImageIcon(img);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+    }
+}

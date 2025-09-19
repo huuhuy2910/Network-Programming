@@ -1,0 +1,104 @@
+package vn.edu.app.server.service;
+
+import vn.edu.app.common.dto.*;
+import vn.edu.app.common.remote.AdminService;
+import vn.edu.app.server.dao.*;
+
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
+import java.util.Objects;
+
+public class AdminServiceImpl extends UnicastRemoteObject implements AdminService {
+    private final StudentDAO studentDAO;
+    private final ClassDAO classDAO;
+    private final MajorDAO majorDAO;
+    private final CourseDAO courseDAO;
+    private final GradeDAO gradeDAO;
+
+    public AdminServiceImpl(StudentDAO studentDAO, ClassDAO classDAO, MajorDAO majorDAO,
+                            CourseDAO courseDAO, GradeDAO gradeDAO) throws RemoteException {
+        super();
+        this.studentDAO = Objects.requireNonNull(studentDAO);
+        this.classDAO = Objects.requireNonNull(classDAO);
+        this.majorDAO = Objects.requireNonNull(majorDAO);
+        this.courseDAO = Objects.requireNonNull(courseDAO);
+        this.gradeDAO = Objects.requireNonNull(gradeDAO);
+    }
+
+    // ===== Sinh viên =====
+    @Override
+    public boolean addStudent(StudentDTO s) throws RemoteException {
+        try { return studentDAO.insert(s); }
+        catch (Exception e) { e.printStackTrace(); return false; }
+    }
+
+    @Override
+    public boolean updateStudent(StudentDTO s) throws RemoteException {
+        try { return studentDAO.update(s); }
+        catch (Exception e) { e.printStackTrace(); return false; }
+    }
+
+    @Override
+    public boolean deleteStudent(String studentId) throws RemoteException {
+        try { return studentDAO.delete(studentId); }
+        catch (Exception e) { e.printStackTrace(); return false; }
+    }
+
+    @Override
+    public List<StudentDTO> getAllStudents() throws RemoteException {
+        try { return studentDAO.findAll(); }
+        catch (Exception e) { e.printStackTrace(); return List.of(); }
+    }
+
+    // ===== Lớp & Ngành =====
+    @Override
+    public List<ClassDTO> getAllClasses() throws RemoteException {
+        try { return classDAO.findAll(); }
+        catch (Exception e) { e.printStackTrace(); return List.of(); }
+    }
+
+    @Override
+    public List<MajorDTO> getAllMajors() throws RemoteException {
+        try { return majorDAO.findAll(); }
+        catch (Exception e) { e.printStackTrace(); return List.of(); }
+    }
+
+    // ===== Học phần =====
+    @Override
+    public boolean addCourse(CourseDTO c) throws RemoteException {
+        try { return courseDAO.insert(c); }
+        catch (Exception e) { e.printStackTrace(); return false; }
+    }
+
+    @Override
+    public boolean updateCourse(CourseDTO c) throws RemoteException {
+        try { return courseDAO.update(c); }
+        catch (Exception e) { e.printStackTrace(); return false; }
+    }
+
+    @Override
+    public boolean deleteCourse(String courseId) throws RemoteException {
+        try { return courseDAO.delete(courseId); }
+        catch (Exception e) { e.printStackTrace(); return false; }
+    }
+
+    @Override
+    public List<CourseDTO> getAllCourses() throws RemoteException {
+        try { return courseDAO.findAll(); }
+        catch (Exception e) { e.printStackTrace(); return List.of(); }
+    }
+
+    // ===== Điểm =====
+    @Override
+    public boolean assignGrade(GradeDTO g) throws RemoteException {
+        try { return gradeDAO.upsert(g); }
+        catch (Exception e) { e.printStackTrace(); return false; }
+    }
+
+    @Override
+    public List<GradeDTO> getGradesByStudent(String studentId) throws RemoteException {
+        try { return gradeDAO.findByStudent(studentId); }
+        catch (Exception e) { e.printStackTrace(); return List.of(); }
+    }
+}

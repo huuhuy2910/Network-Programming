@@ -1,0 +1,5 @@
+package vn.edu.app.server.dao.impl;
+
+public class MajorDAOImpl {
+
+}

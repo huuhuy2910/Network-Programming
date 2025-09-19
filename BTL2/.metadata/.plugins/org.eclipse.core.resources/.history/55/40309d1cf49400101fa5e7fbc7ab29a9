@@ -1,0 +1,120 @@
+package vn.edu.app.client.ui.admin;
+
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.client.util.UIUtils;
+import vn.edu.app.common.remote.ReportService;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public class ReportPanel extends JPanel {
+    private BarChartPanel chart = new BarChartPanel();
+
+    public ReportPanel() {
+        setLayout(new BorderLayout(10,10));
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton btnClassByMajor = new JButton("Classes by Major", UIUtils.icon("icons/report.png",18,18));
+        JButton btnStudentByMajor = new JButton("Students by Major", UIUtils.icon("icons/report.png",18,18));
+        JButton btnStudentByStatus = new JButton("Students by Status", UIUtils.icon("icons/report.png",18,18));
+        top.add(btnClassByMajor); top.add(btnStudentByMajor); top.add(btnStudentByStatus);
+        add(top, BorderLayout.NORTH);
+        add(chart, BorderLayout.CENTER);
+
+        btnClassByMajor.addActionListener(e -> load("Classes by Major", 1));
+        btnStudentByMajor.addActionListener(e -> load("Students by Major", 2));
+        btnStudentByStatus.addActionListener(e -> load("Students by Status", 3));
+
+        load("Students by Major", 2);
+    }
+
+    private void load(String title, int mode) {
+        try {
+            ReportService svc = RMIConnector.report();
+            Map<String,Integer> data = switch (mode) {
+                case 1 -> svc.countClassesByMajor();
+                case 2 -> svc.countStudentsByMajor();
+                case 3 -> svc.countStudentsByStatus();
+                default -> new LinkedHashMap<>();
+            };
+            chart.setData(title, data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            UIUtils.error(this, "Load report failed: " + e.getMessage());
+        }
+    }
+
+    // Simple bar chart with Java2D
+    static class BarChartPanel extends JPanel {
+        private String title = "";
+        private Map<String,Integer> data = new LinkedHashMap<>();
+
+        public void setData(String title, Map<String,Integer> data) {
+            this.title = title;
+            this.data = data != null ? data : new LinkedHashMap<>();
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g0) {
+            super.paintComponent(g0);
+            Graphics2D g = (Graphics2D) g0;
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int w = getWidth(), h = getHeight();
+            g.setColor(new Color(250,252,255));
+            g.fillRect(0,0,w,h);
+
+            g.setColor(new Color(50,60,80));
+            g.setFont(getFont().deriveFont(Font.BOLD, 16f));
+            g.drawString(title, 16, 28);
+
+            if (data.isEmpty()) {
+                g.drawString("No data", 16, 56);
+                return;
+            }
+
+            int left=60, right=20, top=50, bottom=40;
+            int gw = w - left - right, gh = h - top - bottom;
+
+            int max = data.values().stream().mapToInt(i->i).max().orElse(1);
+            int n = data.size();
+            int barW = Math.max(20, gw / Math.max(1, n*2));
+
+            int i=0;
+            int x = left + (gw - n*(barW*2-barW)) / 2;
+
+            for (var e : data.entrySet()) {
+                int val = e.getValue();
+                int barH = (int) ((val * 1.0 / max) * (gh - 20));
+                int y = top + gh - barH;
+
+                // màu auto
+                g.setColor(new Color(80 + (i*30)%120, 120 + (i*50)%120, 180 - (i*40)%120));
+                g.fillRoundRect(x, y, barW, barH, 8,8);
+
+                g.setColor(new Color(30,40,60));
+                g.setFont(getFont().deriveFont(12f));
+                String label = e.getKey();
+                g.drawString(String.valueOf(val), x+barW/4, y-6);
+
+                // nhãn trục X
+                int tx = x; int ty = top + gh + 16;
+                g.drawString(shorten(label, 12), tx, ty);
+
+                x += barW + 12;
+                i++;
+            }
+
+            // trục
+            g.setColor(new Color(180,190,210));
+            g.drawLine(left, top+gh, w-right, top+gh);
+            g.drawLine(left, top, left, top+gh);
+        }
+
+        private String shorten(String s, int max) {
+            return (s!=null && s.length()>max) ? s.substring(0, max-1) + "…" : s;
+        }
+    }
+}

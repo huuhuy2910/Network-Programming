@@ -1,0 +1,33 @@
+package vn.edu.app.client.ui.student;
+
+import vn.edu.app.common.dto.UserDTO;
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.common.dto.GradeDTO;
+import vn.edu.app.common.remote.StudentService;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.List;
+
+public class StudentGradesPanel extends JPanel {
+    private DefaultTableModel model = new DefaultTableModel(new String[]{"Course","Score","Note"},0);
+
+    public StudentGradesPanel(UserDTO user) {
+        setLayout(new BorderLayout());
+        JTable table = new JTable(model);
+        add(new JScrollPane(table), BorderLayout.CENTER);
+        loadGrades(user.getStudentId());
+    }
+
+    private void loadGrades(String id) {
+        try {
+            StudentService svc = RMIConnector.student();
+            List<GradeDTO> list = svc.getGrades(id);
+            model.setRowCount(0);
+            for (GradeDTO g : list) {
+                model.addRow(new Object[]{g.getCourseId()+"-"+g.getCourseName(), g.getScore(), g.getNote()});
+            }
+        } catch (Exception ex) { ex.printStackTrace(); }
+    }
+}

@@ -1,0 +1,51 @@
+package vn.edu.app.client.ui.admin;
+
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.client.ui.dialog.GradeFormDialog;
+import vn.edu.app.client.util.UIUtils;
+import vn.edu.app.common.dto.GradeDTO;
+import vn.edu.app.common.remote.AdminService;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.List;
+
+public class GradeManagementPanel extends JPanel {
+    private JTextField tfStudentId = new JTextField(16);
+    private DefaultTableModel model = new DefaultTableModel(new String[]{"Course ID","Score","Note"},0);
+    private JTable table = new JTable(model);
+
+    public GradeManagementPanel() {
+        setLayout(new BorderLayout(10,10));
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton btnLoad = new JButton("Load", UIUtils.icon("icons/search.png",18,18));
+        JButton btnAssign = new JButton("Assign/Update", UIUtils.icon("icons/save.png",18,18));
+        top.add(new JLabel("Student ID:")); top.add(tfStudentId); top.add(btnLoad); top.add(btnAssign);
+        add(top, BorderLayout.NORTH);
+        add(new JScrollPane(table), BorderLayout.CENTER);
+
+        btnLoad.addActionListener(e -> load());
+        btnAssign.addActionListener(e -> openAssignDialog());
+    }
+
+    private void load() {
+        String sid = tfStudentId.getText().trim();
+        if (sid.isEmpty()) { UIUtils.error(this,"Enter student ID"); return; }
+        try {
+            List<GradeDTO> list = RMIConnector.admin().getGradesByStudent(sid);
+            model.setRowCount(0);
+            for (GradeDTO g : list) {
+                model.addRow(new Object[]{ g.getCourseId(), g.getScore(), g.getGradeNote() });
+            }
+        } catch (Exception e) { e.printStackTrace(); UIUtils.error(this,"Load grades failed: "+e.getMessage()); }
+    }
+
+    private void openAssignDialog() {
+        String sid = tfStudentId.getText().trim();
+        if (sid.isEmpty()) { UIUtils.error(this,"Enter student ID"); return; }
+        GradeFormDialog dlg = new GradeFormDialog(SwingUtilities.getWindowAncestor(this), sid);
+        dlg.setVisible(true);
+        if (dlg.isConfirmed()) load();
+    }
+}

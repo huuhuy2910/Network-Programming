@@ -1,0 +1,119 @@
+package vn.edu.app.client.ui;
+
+import vn.edu.app.client.ui.admin.*;
+import vn.edu.app.common.dto.UserDTO;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.util.HashMap;
+import java.util.Map;
+
+public class MainFrame extends JFrame {
+    private final UserDTO currentUser;
+    private final JPanel contentPanel;
+    private final CardLayout cardLayout;
+    private final Map<String, JPanel> viewMap = new HashMap<>();
+
+    public MainFrame(UserDTO user) {
+        this.currentUser = user;
+        setTitle("Admin Dashboard - " + user.getUsername());
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(1000, 600);
+        setLocationRelativeTo(null);
+
+        // Layout chính
+        setLayout(new BorderLayout());
+
+        // Sidebar bên trái
+        JPanel sidebar = new JPanel();
+        sidebar.setBackground(new Color(40, 45, 60));
+        sidebar.setLayout(new GridLayout(8, 1, 5, 5));
+        sidebar.setPreferredSize(new Dimension(200, getHeight()));
+        sidebar.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
+
+        JButton btnStudents = makeSidebarButton("Students", "icons/student.png");
+        JButton btnClasses = makeSidebarButton("Classes", "icons/class.png");
+        JButton btnCourses = makeSidebarButton("Courses", "icons/course.png");
+        JButton btnGrades = makeSidebarButton("Grades", "icons/grade.png");
+        JButton btnReports = makeSidebarButton("Reports", "icons/report.png");
+        JButton btnLogout = makeSidebarButton("Logout", "icons/exit.png");
+
+        sidebar.add(btnStudents);
+        sidebar.add(btnClasses);
+        sidebar.add(btnCourses);
+        sidebar.add(btnGrades);
+        sidebar.add(btnReports);
+        sidebar.add(Box.createVerticalGlue());
+        sidebar.add(btnLogout);
+
+        add(sidebar, BorderLayout.WEST);
+
+        // Content chính
+        cardLayout = new CardLayout();
+        contentPanel = new JPanel(cardLayout);
+
+        viewMap.put("Students", new StudentManagementPanel());
+        viewMap.put("Classes", new ClassManagementPanel());
+        viewMap.put("Courses", new CourseManagementPanel());
+        viewMap.put("Grades", new GradeManagementPanel());
+        viewMap.put("Reports", new ReportPanel());
+
+        for (Map.Entry<String, JPanel> entry : viewMap.entrySet()) {
+            contentPanel.add(entry.getValue(), entry.getKey());
+        }
+
+        add(contentPanel, BorderLayout.CENTER);
+
+        // Sự kiện
+        btnStudents.addActionListener(e -> switchView("Students"));
+        btnClasses.addActionListener(e -> switchView("Classes"));
+        btnCourses.addActionListener(e -> switchView("Courses"));
+        btnGrades.addActionListener(e -> switchView("Grades"));
+        btnReports.addActionListener(e -> switchView("Reports"));
+        btnLogout.addActionListener(this::logout);
+
+        // Mặc định
+        switchView("Students");
+    }
+
+    private JButton makeSidebarButton(String text, String iconPath) {
+        JButton btn = new JButton(text, loadIcon(iconPath, 20, 20));
+        btn.setFocusPainted(false);
+        btn.setHorizontalAlignment(SwingConstants.LEFT);
+        btn.setBackground(new Color(70, 75, 95));
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        return btn;
+    }
+
+    private void switchView(String name) {
+        cardLayout.show(contentPanel, name);
+    }
+
+    private void logout(ActionEvent e) {
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Do you really want to logout?",
+                "Logout",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                loadIcon("icons/question.png", 24, 24));
+        if (confirm == JOptionPane.YES_OPTION) {
+            dispose();
+            SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+        }
+    }
+
+    private ImageIcon loadIcon(String path, int w, int h) {
+        ImageIcon icon = new ImageIcon(path);
+        Image img = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+        return new ImageIcon(img);
+    }
+
+    public static void main(String[] args) {
+        // Demo chạy thử (fake user ADMIN)
+        UserDTO admin = new UserDTO("admin", "ADMIN", null);
+        SwingUtilities.invokeLater(() -> new MainFrame(admin).setVisible(true));
+    }
+}

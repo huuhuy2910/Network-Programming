@@ -1,0 +1,105 @@
+package vn.edu.app.client.ui;
+
+import vn.edu.app.common.dto.UserDTO;
+import vn.edu.app.client.ui.student.*;
+import vn.edu.app.client.ui.admin.*;
+import vn.edu.app.client.util.UIUtils;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public class MainFrame extends JFrame {
+    private CardLayout card = new CardLayout();
+    private JPanel content = new JPanel(card);
+    private UserDTO currentUser;
+
+    public MainFrame(UserDTO user) {
+        this.currentUser = user;
+
+        setTitle("Dashboard - " + user.getRole());
+        setSize(1100, 650);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+
+        // ===== HEADER =====
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(new Color(52, 152, 219)); // xanh dương
+        header.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        JLabel lblUser = new JLabel("Welcome, " + user.getUsername() + "  |  Role: " + user.getRole());
+        lblUser.setForeground(Color.WHITE);
+        lblUser.setFont(new Font("Segoe UI", Font.BOLD, 15));
+
+        JButton btnLogout = new JButton("Logout", UIUtils.icon("icons/exit.png", 18, 18));
+        btnLogout.setBackground(new Color(231, 76, 60));
+        btnLogout.setForeground(Color.WHITE);
+        btnLogout.setFocusPainted(false);
+
+        header.add(lblUser, BorderLayout.WEST);
+        header.add(btnLogout, BorderLayout.EAST);
+
+        add(header, BorderLayout.NORTH);
+
+        btnLogout.addActionListener(e -> {
+            dispose();
+            new LoginFrame().setVisible(true);
+        });
+
+        // ===== SIDEBAR =====
+        JPanel sidebar = new JPanel(new GridLayout(0, 1, 0, 12));
+        sidebar.setBackground(new Color(44, 62, 80));
+        sidebar.setPreferredSize(new Dimension(200, 0));
+        sidebar.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10));
+
+        Map<String, JPanel> map = new LinkedHashMap<>();
+        if ("STUDENT".equalsIgnoreCase(user.getRole())) {
+            map.put("Profile", new StudentProfilePanel(user));
+            map.put("Grades", new StudentGradesPanel(user));
+        } else {
+            map.put("Students", new StudentManagementPanel());
+            map.put("Classes", new ClassManagementPanel());
+            map.put("Courses", new CourseManagementPanel());
+            map.put("Grades", new GradeManagementPanel());
+            map.put("Reports", new ReportPanel());
+        }
+
+        // ===== GÁN màu riêng cho từng nút =====
+        Map<String, Color> colors = Map.of(
+                "Students", new Color(52, 152, 219),   // xanh dương
+                "Classes",  new Color(46, 204, 113),   // xanh lá
+                "Courses",  new Color(241, 196, 15),   // vàng
+                "Grades",   new Color(155, 89, 182),   // tím
+                "Reports",  new Color(231, 76, 60),    // đỏ
+                "Profile",  new Color(52, 152, 219),   // nếu role=student
+                "Grades",   new Color(230, 126, 34)    // nếu role=student
+        );
+
+        for (var entry : map.entrySet()) {
+            String name = entry.getKey();
+            JPanel panel = entry.getValue();
+
+            JButton btn = new JButton(name, UIUtils.icon("icons/" + name.toLowerCase() + ".png", 20, 20));
+            btn.setFocusPainted(false);
+            btn.setBackground(colors.getOrDefault(name, new Color(52, 73, 94)));
+            btn.setForeground(Color.WHITE);
+            btn.setHorizontalAlignment(SwingConstants.LEFT);
+            btn.setIconTextGap(10);
+
+            btn.addActionListener(e -> card.show(content, name));
+
+            sidebar.add(btn);
+            content.add(panel, name);
+        }
+
+        add(sidebar, BorderLayout.WEST);
+        add(content, BorderLayout.CENTER);
+
+        // Show panel đầu tiên
+        if (!map.isEmpty()) {
+            card.show(content, map.keySet().iterator().next());
+        }
+    }
+}

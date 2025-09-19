@@ -1,0 +1,57 @@
+package vn.edu.app.client.ui.student;
+
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.client.util.UIUtils;
+import vn.edu.app.common.dto.CourseDTO;
+import vn.edu.app.common.dto.GradeDTO;
+import vn.edu.app.common.dto.UserDTO;
+import vn.edu.app.common.remote.AdminService;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class StudentGradesPanel extends JPanel {
+    private DefaultTableModel model = new DefaultTableModel(new String[]{"Course ID","Course Name","Credits","Score","Note"}, 0);
+    private JTable table = new JTable(model);
+    private final UserDTO currentUser;
+
+    public StudentGradesPanel(UserDTO user) {
+        this.currentUser = user;
+        setLayout(new BorderLayout(10,10));
+        add(new JScrollPane(table), BorderLayout.CENTER);
+        JButton refresh = new JButton("Refresh", UIUtils.icon("icons/refresh.png", 18,18));
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        top.add(refresh);
+        add(top, BorderLayout.NORTH);
+        refresh.addActionListener(e -> load());
+        load();
+    }
+
+    private void load() {
+        try {
+            AdminService admin = RMIConnector.admin();
+            List<CourseDTO> courses = admin.getAllCourses();
+            Map<String, CourseDTO> courseMap = courses.stream().collect(Collectors.toMap(CourseDTO::getCourseId, c->c));
+
+            List<GradeDTO> grades = admin.getGradesByStudent(currentUser.getStudentId());
+            model.setRowCount(0);
+            for (GradeDTO g : grades) {
+                CourseDTO c = courseMap.get(g.getCourseId());
+                model.addRow(new Object[]{
+                        g.getCourseId(),
+                        c != null ? c.getCourseName() : "",
+                        c != null ? c.getCredits() : "",
+                        g.getScore(),
+                        g.getGradeNote()
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            UIUtils.error(this, "Cannot load grades: " + e.getMessage());
+        }
+    }
+}

@@ -1,0 +1,9 @@
+INDEX VERSION 1.134+D:\LTJava\BTL2\.metadata\.plugins\org.eclipse.jdt.core
+28597710.index
+1369163465.index
+262142283.index
+1865797976.index
+3679914405.index
+2461411560.index
+103390030.index
+2034787699.index

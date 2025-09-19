@@ -1,0 +1,5 @@
+package vn.edu.app.common.dto;
+
+public class ClassDTO {
+
+}

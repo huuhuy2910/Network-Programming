@@ -1,0 +1,5 @@
+package vn.edu.app.client.remote;
+
+public class RMIConnector {
+
+}

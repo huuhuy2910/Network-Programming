@@ -1,0 +1,33 @@
+package vn.edu.app.client.remote;
+
+import vn.edu.app.common.remote.AuthService;
+import vn.edu.app.common.remote.StudentService;
+import vn.edu.app.common.remote.AdminService;
+import vn.edu.app.common.remote.ReportService;
+
+import java.rmi.Naming;
+
+public class RMIConnector {
+    private static final String HOST = "localhost";
+    private static final int PORT = 1099;
+
+    private static String buildUrl(String serviceName) {
+        return String.format("rmi://%s:%d/%s", HOST, PORT, serviceName);
+    }
+
+    public static AuthService getAuthService() throws Exception {
+        return (AuthService) Naming.lookup(buildUrl("AuthService"));
+    }
+
+    public static StudentService getStudentService() throws Exception {
+        return (StudentService) Naming.lookup(buildUrl("StudentService"));
+    }
+
+    public static AdminService getAdminService() throws Exception {
+        return (AdminService) Naming.lookup(buildUrl("AdminService"));
+    }
+
+    public static ReportService getReportService() throws Exception {
+        return (ReportService) Naming.lookup(buildUrl("ReportService"));
+    }
+}

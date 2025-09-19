@@ -1,0 +1,162 @@
+package vn.edu.app.client.ui;
+
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.client.util.UIUtils;
+import vn.edu.app.common.dto.UserDTO;
+import vn.edu.app.common.remote.AuthService;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+
+public class LoginFrame extends JFrame {
+    private JTextField tfUsername = new JTextField(20);
+    private JPasswordField tfPassword = new JPasswordField(20);
+
+    public LoginFrame() {
+        setTitle("Student Management - Login");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(380, 320);
+        setResizable(false);
+        setLocationRelativeTo(null);
+
+        // Root panel bo tròn
+        JPanel root = new RoundedPanel(20, new Color(250, 250, 250));
+        root.setLayout(new BorderLayout(15, 15));
+        root.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        // Title
+        JLabel lblTitle = new JLabel("User Login", SwingConstants.CENTER);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblTitle.setForeground(Color.BLACK);
+        root.add(lblTitle, BorderLayout.NORTH);
+
+        // Form
+        JPanel form = new JPanel(new GridLayout(2, 1, 10, 15));
+        form.setOpaque(false);
+
+        // Username field
+        JPanel userPanel = new JPanel(new BorderLayout(5, 5));
+        userPanel.setBackground(new Color(240, 240, 240));
+        userPanel.setBorder(new RoundedBorder(15));
+        JLabel userIcon = new JLabel(loadIcon("/icons/user.png", 18, 18));
+        userIcon.setBorder(new EmptyBorder(0, 8, 0, 8));
+        userPanel.add(userIcon, BorderLayout.WEST);
+        styleTextField(tfUsername);
+        userPanel.add(tfUsername, BorderLayout.CENTER);
+
+        // Password field
+        JPanel passPanel = new JPanel(new BorderLayout(5, 5));
+        passPanel.setBackground(new Color(240, 240, 240));
+        passPanel.setBorder(new RoundedBorder(15));
+        JLabel passIcon = new JLabel(loadIcon("/icons/password.png", 18, 18));
+        passIcon.setBorder(new EmptyBorder(0, 8, 0, 8));
+        passPanel.add(passIcon, BorderLayout.WEST);
+        styleTextField(tfPassword);
+        passPanel.add(tfPassword, BorderLayout.CENTER);
+
+        form.add(userPanel);
+        form.add(passPanel);
+        root.add(form, BorderLayout.CENTER);
+
+        // Login button
+        JButton btnLogin = new JButton("Login");
+        btnLogin.setBackground(new Color(76, 175, 80));
+        btnLogin.setForeground(Color.WHITE);
+        btnLogin.setFocusPainted(false);
+        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btnLogin.setPreferredSize(new Dimension(100, 40));
+        btnLogin.setBorder(new RoundedBorder(20));
+
+        btnLogin.addActionListener(this::doLogin);
+
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        actions.setOpaque(false);
+        actions.add(btnLogin);
+
+        root.add(actions, BorderLayout.SOUTH);
+
+        setContentPane(root);
+        getRootPane().setDefaultButton(btnLogin);
+    }
+
+    private void doLogin(ActionEvent e) {
+        try {
+            AuthService auth = RMIConnector.auth();
+            String u = tfUsername.getText().trim();
+            String p = new String(tfPassword.getPassword());
+            if (u.isEmpty() || p.isEmpty()) {
+                UIUtils.error(this, "Please enter username & password");
+                return;
+            }
+
+            UserDTO user = auth.login(u, p);
+            if (user != null) {
+                UIUtils.info(this, "Welcome " + user.getUsername());
+                new MainFrame(user).setVisible(true);
+                dispose();
+            } else {
+                UIUtils.error(this, "Invalid username or password");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            UIUtils.error(this, "Connection error: " + ex.getMessage());
+        }
+    }
+
+    // Load icon chuẩn từ resources
+    private ImageIcon loadIcon(String path, int w, int h) {
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource(path));
+            Image img = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+            return new ImageIcon(img);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void styleTextField(JTextField field) {
+        field.setBorder(new EmptyBorder(8, 8, 8, 8));
+        field.setBackground(new Color(240, 240, 240));
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+    }
+
+    // Panel bo tròn
+    static class RoundedPanel extends JPanel {
+        private int radius;
+        private Color bg;
+
+        public RoundedPanel(int radius, Color bg) {
+            this.radius = radius;
+            this.bg = bg;
+            setOpaque(false);
+        }
+
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(bg);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
+            g2.dispose();
+        }
+    }
+
+    // Border bo tròn
+    static class RoundedBorder extends LineBorder {
+        private int radius;
+        public RoundedBorder(int radius) {
+            super(Color.GRAY, 1, true);
+            this.radius = radius;
+        }
+        public Insets getBorderInsets(Component c) {
+            return new Insets(this.radius + 1, this.radius + 1, this.radius + 2, this.radius);
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+    }
+}

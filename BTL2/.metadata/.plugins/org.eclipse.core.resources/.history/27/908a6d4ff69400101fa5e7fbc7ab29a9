@@ -1,0 +1,43 @@
+package vn.edu.app.client.ui.admin;
+
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.client.util.UIUtils;
+import vn.edu.app.common.dto.ClassDTO;
+import vn.edu.app.common.dto.MajorDTO;
+import vn.edu.app.common.remote.AdminService;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class ClassManagementPanel extends JPanel {
+    private DefaultTableModel model = new DefaultTableModel(new String[]{"Class ID","Class Name","Course","Major"},0);
+    private JTable table = new JTable(model);
+
+    public ClassManagementPanel() {
+        setLayout(new BorderLayout(10,10));
+        add(new JScrollPane(table), BorderLayout.CENTER);
+        JButton reload = new JButton("Reload", UIUtils.icon("icons/refresh.png", 18,18));
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        top.add(reload);
+        add(top, BorderLayout.NORTH);
+        reload.addActionListener(e -> load());
+        load();
+    }
+
+    private void load() {
+        try {
+            AdminService admin = RMIConnector.admin();
+            List<ClassDTO> classes = admin.getAllClasses();
+            List<MajorDTO> majors = admin.getAllMajors();
+            Map<String,String> majorMap = majors.stream().collect(Collectors.toMap(MajorDTO::getMajorId, MajorDTO::getMajorName));
+            model.setRowCount(0);
+            for (ClassDTO c : classes) {
+                model.addRow(new Object[]{ c.getClassId(), c.getClassName(), c.getCourse(), majorMap.getOrDefault(c.getMajorId(), c.getMajorId()) });
+            }
+        } catch (Exception e) { e.printStackTrace(); UIUtils.error(this, "Load failed: " + e.getMessage()); }
+    }
+}

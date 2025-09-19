@@ -1,0 +1,42 @@
+package vn.edu.app.server.dao.impl;
+
+import vn.edu.app.server.dao.UserDAO;
+import vn.edu.app.server.util.DBConnection;
+
+import java.sql.*;
+import java.util.Optional;
+
+public class UserDAOImpl implements UserDAO {
+
+    @Override
+    public Optional<UserRecord> findByUsername(String username) {
+        String sql = "SELECT username, password_hash, role FROM users WHERE username=?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String u = rs.getString("username");
+                    String hash = rs.getString("password_hash");
+                    String role = rs.getString("role");
+                    // nếu là STUDENT, studentId = username; nếu ADMIN, có thể null
+                    String studentId = "STUDENT".equals(role) ? u : null;
+                    return Optional.of(new UserRecord(u, hash, role, studentId));
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean updatePassword(String username, String newPass) {
+        String sql = "UPDATE users SET password=? WHERE username=?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, newPass);
+            ps.setString(2, username);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) { e.printStackTrace(); }
+        return false;
+    }
+}

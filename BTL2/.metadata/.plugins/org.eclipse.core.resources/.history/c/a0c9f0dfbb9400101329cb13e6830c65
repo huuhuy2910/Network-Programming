@@ -1,0 +1,67 @@
+package vn.edu.app.client.ui.student;
+
+import vn.edu.app.common.dto.UserDTO;
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.common.dto.StudentDTO;
+import vn.edu.app.common.remote.StudentService;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class StudentProfilePanel extends JPanel {
+    private JTextField tfName = new JTextField(20);
+    private JTextField tfClass = new JTextField(20);
+    private JTextField tfMajor = new JTextField(20);
+    private JTextField tfPhone = new JTextField(20);
+    private JTextField tfEmail = new JTextField(20);
+    private JTextField tfAddress = new JTextField(20);
+    private JTextField tfStatus = new JTextField(20);
+    private JButton btnSave = new JButton("Save");
+
+    public StudentProfilePanel(UserDTO user) {
+        setLayout(new BorderLayout(10,10));
+        JPanel form = new JPanel(new GridLayout(0,2,10,10));
+
+        form.add(new JLabel("Name")); form.add(tfName);
+        form.add(new JLabel("Class")); form.add(tfClass);
+        form.add(new JLabel("Major")); form.add(tfMajor);
+        form.add(new JLabel("Phone")); form.add(tfPhone);
+        form.add(new JLabel("Email")); form.add(tfEmail);
+        form.add(new JLabel("Address")); form.add(tfAddress);
+        form.add(new JLabel("Status")); form.add(tfStatus);
+
+        add(form,BorderLayout.CENTER);
+        add(btnSave,BorderLayout.SOUTH);
+
+        loadProfile(user.getStudentId());
+        btnSave.addActionListener(e -> saveProfile(user.getStudentId()));
+    }
+
+    private void loadProfile(String id) {
+        try {
+            StudentService svc = RMIConnector.student();
+            StudentDTO s = svc.getStudentById(id);
+            if (s != null) {
+                tfName.setText(s.getFullName());
+                tfClass.setText(s.getClassName());
+                tfMajor.setText(s.getMajor());
+                tfPhone.setText(s.getPhone());
+                tfEmail.setText(s.getEmail());
+                tfAddress.setText(s.getAddress());
+                tfStatus.setText(s.getStatus());
+            }
+        } catch (Exception ex) { ex.printStackTrace(); }
+    }
+
+    private void saveProfile(String id) {
+        try {
+            StudentService svc = RMIConnector.student();
+            StudentDTO dto = new StudentDTO(
+                    id, tfName.getText(), tfClass.getText(), tfMajor.getText(),
+                    "", "", tfPhone.getText(), tfEmail.getText(), tfAddress.getText(), "", tfStatus.getText()
+            );
+            svc.updateProfile(dto);
+            JOptionPane.showMessageDialog(this,"Saved!");
+        } catch (Exception ex) { ex.printStackTrace(); }
+    }
+}

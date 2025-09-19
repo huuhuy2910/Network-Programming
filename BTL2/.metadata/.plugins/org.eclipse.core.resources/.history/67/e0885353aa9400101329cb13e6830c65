@@ -1,0 +1,23 @@
+package vn.edu.app.server.dao;
+
+import java.util.Optional;
+
+public interface UserDAO {
+    Optional<UserRecord> findByUsername(String username);
+    boolean updatePassword(String username, String newHash);
+
+    // record nho nhỏ để chuyên chở dữ liệu users trong DAO
+    public static final class UserRecord {
+        public final String username;
+        public final String password;
+        public final String role;
+        public final String studentIdOrNull; // nếu là SV thì = username; ADMIN -> null hoặc chính username
+
+        public UserRecord(String username, String passwordHash, String role, String studentIdOrNull) {
+            this.username = username;
+            this.password = password;
+            this.role = role;
+            this.studentIdOrNull = studentIdOrNull;
+        }
+    }
+}

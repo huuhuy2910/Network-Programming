@@ -1,0 +1,99 @@
+package vn.edu.app.client.ui.dialog;
+
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.client.util.UIUtils;
+import vn.edu.app.common.dto.ClassDTO;
+import vn.edu.app.common.dto.CourseDTO;
+import vn.edu.app.common.dto.GradeDTO;
+import vn.edu.app.common.dto.StudentDTO;
+import vn.edu.app.common.remote.AdminService;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+
+public class GradeFormDialog extends JDialog {
+    private final String fixedStudentId; // nếu truyền sẵn studentId
+    private JComboBox<StudentDTO> cbStudent = new JComboBox<>();
+    private JComboBox<CourseDTO> cbCourse = new JComboBox<>();
+    private JSpinner spScore = new JSpinner(new SpinnerNumberModel(8.0, 0.0, 10.0, 0.1));
+    private JTextField tfNote = new JTextField(22);
+    private boolean confirmed=false;
+
+    public GradeFormDialog(Window owner, String fixedStudentId) {
+        super(owner, "Assign / Update Grade", ModalityType.APPLICATION_MODAL);
+        this.fixedStudentId = fixedStudentId;
+        setSize(460, 260);
+        setLocationRelativeTo(owner);
+        setLayout(new BorderLayout(10,10));
+
+        JPanel form = new JPanel(new GridBagLayout());
+        GridBagConstraints g = new GridBagConstraints();
+        g.insets = new Insets(6,6,6,6); g.fill=GridBagConstraints.HORIZONTAL;
+
+        int r=0;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Student"), g); g.gridx=1; form.add(cbStudent, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Course"), g); g.gridx=1; form.add(cbCourse, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Score"), g); g.gridx=1; form.add(spScore, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Note"), g); g.gridx=1; form.add(tfNote, g); r++;
+
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton save = new JButton("Save", UIUtils.icon("icons/save.png",18,18));
+        JButton cancel = new JButton("Cancel", UIUtils.icon("icons/exit.png",18,18));
+        bottom.add(save); bottom.add(cancel);
+
+        add(form, BorderLayout.CENTER);
+        add(bottom, BorderLayout.SOUTH);
+
+        cancel.addActionListener(e -> dispose());
+        save.addActionListener(e -> onSave());
+
+        loadData();
+    }
+
+    private void loadData() {
+        try {
+            AdminService admin = RMIConnector.admin();
+
+            // Load students (từ tất cả)
+            List<StudentDTO> students = admin.getAllStudents();
+            cbStudent.removeAllItems();
+            for (StudentDTO s : students) cbStudent.addItem(s);
+
+            // Pre-select nếu truyền sẵn
+            if (fixedStudentId != null && !fixedStudentId.isBlank()) {
+                for (int i=0;i<cbStudent.getItemCount();i++) {
+                    if (cbStudent.getItemAt(i).getStudentId().equals(fixedStudentId)) {
+                        cbStudent.setSelectedIndex(i); break;
+                    }
+                }
+            }
+
+            // Load courses
+            List<CourseDTO> courses = admin.getAllCourses();
+            cbCourse.removeAllItems();
+            for (CourseDTO c : courses) cbCourse.addItem(c);
+
+        } catch (Exception e) { e.printStackTrace(); UIUtils.error(this,"Load data failed: " + e.getMessage()); }
+    }
+
+    private void onSave() {
+        try {
+            StudentDTO s = (StudentDTO) cbStudent.getSelectedItem();
+            CourseDTO c = (CourseDTO) cbCourse.getSelectedItem();
+            if (s == null || c == null) { UIUtils.error(this,"Missing student or course"); return; }
+
+            GradeDTO g = new GradeDTO();
+            g.setStudentId(s.getStudentId());
+            g.setCourseId(c.getCourseId());
+            g.setScore(((Double) spScore.getValue()).floatValue());
+            g.setGradeNote(tfNote.getText().trim());
+
+            boolean ok = RMIConnector.admin().assignGrade(g);
+            if (ok) { confirmed=true; UIUtils.info(this,"Saved"); dispose(); }
+            else UIUtils.error(this,"Save failed");
+        } catch (Exception e) { e.printStackTrace(); UIUtils.error(this,e.getMessage()); }
+    }
+
+    public boolean isConfirmed(){ return confirmed; }
+}

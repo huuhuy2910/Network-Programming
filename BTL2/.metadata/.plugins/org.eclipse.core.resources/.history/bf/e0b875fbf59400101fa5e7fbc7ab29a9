@@ -1,0 +1,73 @@
+package vn.edu.app.client.ui.dialog;
+
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.client.util.UIUtils;
+import vn.edu.app.common.dto.CourseDTO;
+import vn.edu.app.common.remote.AdminService;
+
+import javax.swing.*;
+import java.awt.*;
+
+public class CourseFormDialog extends JDialog {
+    private JTextField tfId = new JTextField(16);
+    private JTextField tfName = new JTextField(22);
+    private JSpinner spCredits = new JSpinner(new SpinnerNumberModel(3,1,10,1));
+    private JTextField tfSemester = new JTextField(10);
+    private boolean confirmed=false;
+    private final CourseDTO seed;
+
+    public CourseFormDialog(Window owner, CourseDTO seed) {
+        super(owner, (seed==null?"Add":"Edit")+" Course", ModalityType.APPLICATION_MODAL);
+        this.seed = seed;
+        setSize(420, 260);
+        setLocationRelativeTo(owner);
+        setLayout(new BorderLayout(10,10));
+
+        JPanel form = new JPanel(new GridBagLayout());
+        GridBagConstraints g = new GridBagConstraints();
+        g.insets=new Insets(6,6,6,6); g.fill=GridBagConstraints.HORIZONTAL;
+
+        int r=0;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Course ID"), g); g.gridx=1; form.add(tfId, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Course Name"), g); g.gridx=1; form.add(tfName, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Credits"), g); g.gridx=1; form.add(spCredits, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Semester"), g); g.gridx=1; form.add(tfSemester, g); r++;
+
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton save=new JButton("Save", UIUtils.icon("icons/save.png",18,18));
+        JButton cancel=new JButton("Cancel", UIUtils.icon("icons/exit.png",18,18));
+        bottom.add(save); bottom.add(cancel);
+
+        add(form,BorderLayout.CENTER);
+        add(bottom,BorderLayout.SOUTH);
+
+        cancel.addActionListener(e->dispose());
+        save.addActionListener(e->onSave());
+
+        if(seed!=null) fill(seed);
+    }
+
+    private void fill(CourseDTO c){
+        tfId.setText(c.getCourseId()); tfId.setEditable(false);
+        tfName.setText(c.getCourseName());
+        spCredits.setValue(c.getCredits());
+        tfSemester.setText(c.getSemester());
+    }
+
+    private void onSave(){
+        try{
+            CourseDTO c = new CourseDTO();
+            c.setCourseId(tfId.getText().trim());
+            c.setCourseName(tfName.getText().trim());
+            c.setCredits((Integer) spCredits.getValue());
+            c.setSemester(tfSemester.getText().trim());
+
+            AdminService admin = RMIConnector.admin();
+            boolean ok = (seed==null) ? admin.addCourse(c) : admin.updateCourse(c);
+            if(ok){ confirmed=true; UIUtils.info(this,"Saved"); dispose(); }
+            else UIUtils.error(this,"Save failed");
+        }catch(Exception e){ e.printStackTrace(); UIUtils.error(this,e.getMessage()); }
+    }
+
+    public boolean isConfirmed(){ return confirmed; }
+}

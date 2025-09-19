@@ -1,0 +1,128 @@
+package vn.edu.app.client.ui.student;
+
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.client.util.UIUtils;
+import vn.edu.app.client.util.Validators;
+import vn.edu.app.common.dto.ClassDTO;
+import vn.edu.app.common.dto.StudentDTO;
+import vn.edu.app.common.dto.UserDTO;
+import vn.edu.app.common.remote.AdminService;
+import vn.edu.app.common.remote.StudentService;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+
+public class StudentProfilePanel extends JPanel {
+    private final UserDTO currentUser;
+
+    private JTextField tfId = new JTextField(18);
+    private JTextField tfName = new JTextField(18);
+    private JComboBox<String> cbGender = new JComboBox<>(new String[]{"M","F"});
+    private JComboBox<ClassDTO> cbClass = new JComboBox<>();
+    private JTextField tfPhone = new JTextField(18);
+    private JTextField tfEmail = new JTextField(18);
+    private JTextField tfAddress = new JTextField(18);
+    private JTextField tfHometown = new JTextField(18);
+    private JComboBox<String> cbStatus = new JComboBox<>(new String[]{"ACTIVE","GRADUATED","DROPPED","SUSPENDED"});
+
+    public StudentProfilePanel(UserDTO user) {
+        this.currentUser = user;
+        setLayout(new BorderLayout(10,10));
+        setBorder(BorderFactory.createEmptyBorder(14,14,14,14));
+
+        JPanel form = new JPanel(new GridBagLayout());
+        GridBagConstraints g = new GridBagConstraints();
+        g.insets = new Insets(6,6,6,6);
+        g.fill = GridBagConstraints.HORIZONTAL;
+
+        int r=0;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Student ID"), g); g.gridx=1; form.add(tfId, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Full name"), g); g.gridx=1; form.add(tfName, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Gender"), g); g.gridx=1; form.add(cbGender, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Class"), g); g.gridx=1; form.add(cbClass, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Phone"), g); g.gridx=1; form.add(tfPhone, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Email"), g); g.gridx=1; form.add(tfEmail, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Address"), g); g.gridx=1; form.add(tfAddress, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Hometown"), g); g.gridx=1; form.add(tfHometown, g); r++;
+        g.gridx=0; g.gridy=r; form.add(new JLabel("Status"), g); g.gridx=1; form.add(cbStatus, g); r++;
+
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnSave = new JButton("Save", UIUtils.icon("icons/save.png", 18,18));
+        south.add(btnSave);
+
+        add(form, BorderLayout.CENTER);
+        add(south, BorderLayout.SOUTH);
+
+        tfId.setEditable(false);
+
+        btnSave.addActionListener(e -> save());
+
+        loadClasses();
+        loadProfile();
+    }
+
+    private void loadClasses() {
+        try {
+            AdminService admin = RMIConnector.admin();
+            List<ClassDTO> classes = admin.getAllClasses();
+            cbClass.removeAllItems();
+            for (ClassDTO c : classes) cbClass.addItem(c);
+        } catch (Exception e) {
+            e.printStackTrace();
+            UIUtils.error(this, "Cannot load classes: " + e.getMessage());
+        }
+    }
+
+    private void loadProfile() {
+        try {
+            StudentService svc = RMIConnector.student();
+            StudentDTO s = svc.getById(currentUser.getStudentId());
+            if (s != null) {
+                tfId.setText(s.getStudentId());
+                tfName.setText(s.getFullName());
+                cbGender.setSelectedItem(s.getGender());
+                // chọn classId
+                for (int i=0;i<cbClass.getItemCount();i++) {
+                    if (cbClass.getItemAt(i).getClassId().equals(s.getClassId())) {
+                        cbClass.setSelectedIndex(i); break;
+                    }
+                }
+                tfPhone.setText(s.getPhone());
+                tfEmail.setText(s.getEmail());
+                tfAddress.setText(s.getAddress());
+                tfHometown.setText(s.getHometown());
+                cbStatus.setSelectedItem(s.getStatus());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            UIUtils.error(this, "Cannot load profile: " + e.getMessage());
+        }
+    }
+
+    private void save() {
+        try {
+            if (!Validators.isEmail(tfEmail.getText())) { UIUtils.error(this,"Invalid email"); return; }
+            if (!Validators.isPhone(tfPhone.getText())) { UIUtils.error(this,"Invalid phone"); return; }
+
+            StudentDTO s = new StudentDTO();
+            s.setStudentId(tfId.getText());
+            s.setFullName(tfName.getText().trim());
+            s.setGender((String) cbGender.getSelectedItem());
+            s.setClassId(((ClassDTO) cbClass.getSelectedItem()).getClassId());
+            s.setPhone(tfPhone.getText().trim());
+            s.setEmail(tfEmail.getText().trim());
+            s.setAddress(tfAddress.getText().trim());
+            s.setHometown(tfHometown.getText().trim());
+            s.setStatus((String) cbStatus.getSelectedItem());
+
+            StudentService svc = RMIConnector.student();
+            boolean ok = svc.updateStudent(s);
+            if (ok) UIUtils.info(this,"Saved");
+            else UIUtils.error(this,"Save failed");
+        } catch (Exception e) {
+            e.printStackTrace();
+            UIUtils.error(this, "Error: " + e.getMessage());
+        }
+    }
+}

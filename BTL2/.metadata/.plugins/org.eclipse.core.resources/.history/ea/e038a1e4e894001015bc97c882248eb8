@@ -1,0 +1,87 @@
+package vn.edu.app.client.ui;
+
+import vn.edu.app.common.dto.UserDTO;
+import vn.edu.app.client.ui.student.*;
+import vn.edu.app.client.ui.admin.*;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public class MainFrame extends JFrame {
+    private CardLayout card = new CardLayout();
+    private JPanel content = new JPanel(card);
+    private UserDTO currentUser;
+
+    public MainFrame(UserDTO user) {
+        this.currentUser = user;
+
+        setTitle("Dashboard - " + user.getRole());
+        setSize(1000, 600);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        setLayout(new BorderLayout());
+
+        // ===== HEADER (hiện tên + logout) =====
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(new Color(230, 230, 230));
+        header.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+
+        JLabel lblUser = new JLabel("Welcome, " + user.getUsername());
+        lblUser.setFont(lblUser.getFont().deriveFont(Font.BOLD, 14f));
+
+        JButton btnLogout = new JButton("Logout");
+        btnLogout.setBackground(new Color(220, 53, 69));
+        btnLogout.setForeground(Color.WHITE);
+        btnLogout.setFocusPainted(false);
+
+        header.add(lblUser, BorderLayout.WEST);
+        header.add(btnLogout, BorderLayout.EAST);
+
+        add(header, BorderLayout.NORTH);
+
+        btnLogout.addActionListener(e -> {
+            dispose();
+            new LoginFrame().setVisible(true);
+        });
+
+        // ===== SIDEBAR =====
+        JPanel sidebar = new JPanel(new GridLayout(0, 1, 0, 10));
+        sidebar.setBackground(new Color(40, 45, 60));
+        sidebar.setPreferredSize(new Dimension(180, 0));
+
+        Map<String, JPanel> map = new LinkedHashMap<>();
+        if ("STUDENT".equalsIgnoreCase(user.getRole())) {
+            map.put("Profile", new StudentProfilePanel(user));
+            map.put("Grades", new StudentGradesPanel(user));
+        } else {
+            map.put("Students", new StudentManagementPanel());
+            map.put("Classes", new ClassManagementPanel());
+            map.put("Courses", new CourseManagementPanel());
+            map.put("Grades", new GradeManagementPanel());
+            map.put("Reports", new ReportPanel());
+        }
+
+        for (var entry : map.entrySet()) {
+            String name = entry.getKey();
+            JPanel panel = entry.getValue();
+            JButton btn = new JButton(name);
+            btn.setFocusPainted(false);
+            btn.setBackground(new Color(60, 65, 85));
+            btn.setForeground(Color.WHITE);
+            sidebar.add(btn);
+            content.add(panel, name);
+            btn.addActionListener(e -> card.show(content, name));
+        }
+
+        add(sidebar, BorderLayout.WEST);
+        add(content, BorderLayout.CENTER);
+
+        // Show panel đầu tiên
+        if (!map.isEmpty()) {
+            card.show(content, map.keySet().iterator().next());
+        }
+    }
+}

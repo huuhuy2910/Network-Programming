@@ -1,0 +1,150 @@
+package vn.edu.app.client.ui;
+
+import vn.edu.app.client.remote.RMIConnector;
+import vn.edu.app.client.util.UIUtils;
+import vn.edu.app.common.dto.UserDTO;
+import vn.edu.app.common.remote.AuthService;
+
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+
+public class LoginFrame extends JFrame {
+    private PlaceholderTextField tfUsername = new PlaceholderTextField("Email Id", 20);
+    private PlaceholderPasswordField tfPassword = new PlaceholderPasswordField("Password", 20);
+
+    public LoginFrame() {
+        setTitle("Student Management - Login");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(380, 300);
+        setResizable(false);
+        setLocationRelativeTo(null);
+
+        JPanel root = new JPanel(new BorderLayout(15, 15));
+        root.setBorder(new EmptyBorder(20, 30, 20, 30));
+        root.setBackground(Color.WHITE);
+
+        // Title
+        JLabel lblTitle = new JLabel("User Login", SwingConstants.CENTER);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        root.add(lblTitle, BorderLayout.NORTH);
+
+        // Form
+        JPanel form = new JPanel(new GridLayout(2, 1, 15, 15));
+        form.setOpaque(false);
+
+        tfUsername.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tfPassword.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        form.add(tfUsername);
+        form.add(tfPassword);
+
+        root.add(form, BorderLayout.CENTER);
+
+        // Button
+        JButton btnLogin = new JButton("Login");
+        btnLogin.setBackground(new Color(76, 175, 80));
+        btnLogin.setForeground(Color.WHITE);
+        btnLogin.setFocusPainted(false);
+        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btnLogin.setPreferredSize(new Dimension(100, 40));
+        btnLogin.setBorder(new RoundedBorder(20));
+
+        btnLogin.addActionListener(this::doLogin);
+
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        actions.setOpaque(false);
+        actions.add(btnLogin);
+
+        root.add(actions, BorderLayout.SOUTH);
+
+        setContentPane(root);
+        getRootPane().setDefaultButton(btnLogin);
+    }
+
+    private void doLogin(ActionEvent e) {
+        try {
+            AuthService auth = RMIConnector.auth();
+            String u = tfUsername.getText().trim();
+            String p = new String(tfPassword.getPassword());
+            if (u.isEmpty() || p.isEmpty()) {
+                UIUtils.error(this, "Please enter username & password");
+                return;
+            }
+
+            UserDTO user = auth.login(u, p);
+            if (user != null) {
+                UIUtils.info(this, "Welcome " + user.getUsername());
+                new MainFrame(user).setVisible(true);
+                dispose();
+            } else {
+                UIUtils.error(this, "Invalid username or password");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            UIUtils.error(this, "Connection error: " + ex.getMessage());
+        }
+    }
+
+    // ====== Custom class ======
+    static class PlaceholderTextField extends JTextField {
+        private String placeholder;
+        public PlaceholderTextField(String placeholder, int size) {
+            super(size);
+            this.placeholder = placeholder;
+            setBorder(new RoundedBorder(15));
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (getText().isEmpty() && !isFocusOwner()) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setColor(Color.GRAY);
+                g2.setFont(getFont().deriveFont(Font.ITALIC));
+                g2.drawString(placeholder, 10, getHeight() / 2 + getFont().getSize() / 2 - 2);
+                g2.dispose();
+            }
+        }
+    }
+
+    static class PlaceholderPasswordField extends JPasswordField {
+        private String placeholder;
+        public PlaceholderPasswordField(String placeholder, int size) {
+            super(size);
+            this.placeholder = placeholder;
+            setBorder(new RoundedBorder(15));
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (getPassword().length == 0 && !isFocusOwner()) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setColor(Color.GRAY);
+                g2.setFont(getFont().deriveFont(Font.ITALIC));
+                g2.drawString(placeholder, 10, getHeight() / 2 + getFont().getSize() / 2 - 2);
+                g2.dispose();
+            }
+        }
+    }
+
+    static class RoundedBorder extends javax.swing.border.AbstractBorder {
+        private int radius;
+        public RoundedBorder(int radius) { this.radius = radius; }
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.LIGHT_GRAY);
+            g2.drawRoundRect(x, y, w-1, h-1, radius, radius);
+            g2.dispose();
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+    }
+}
