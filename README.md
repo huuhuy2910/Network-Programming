@@ -59,8 +59,8 @@ Hệ thống hỗ trợ hai nhóm đối tượng chính:
 
 ### 3.1. 🔑 Đăng nhập
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/26a732a2-e621-44f0-9324-ff379b93f932" width="400"/>
-  <img src="https://github.com/user-attachments/assets/efe451c1-790b-416a-a11f-dc1d840ec10e" width="400"/>
+  <img src="https://github.com/user-attachments/assets/26a732a2-e621-44f0-9324-ff379b93f932" width="300"/>
+  <img src="https://github.com/user-attachments/assets/efe451c1-790b-416a-a11f-dc1d840ec10e" width="300"/>
 </p>
 <p align="center"><em>Hình 1-2. Giao diện đăng nhập & thông báo lỗi</em></p>
 
@@ -93,9 +93,9 @@ Hệ thống hỗ trợ hai nhóm đối tượng chính:
 <p align="center"><em>Hình 6. Giao diện nhập điểm cho sinh viên</em></p>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/3d081e5a-d16c-4c25-bc66-02f861554480" width="400"/>
+  <img src="https://github.com/user-attachments/assets/3d081e5a-d16c-4c25-bc66-02f861554480" width="300"/>
 
-  <img src="https://github.com/user-attachments/assets/b9bf1ef1-15e1-4a73-a49a-0d1c8b7665a6" width="400"/>
+  <img src="https://github.com/user-attachments/assets/b9bf1ef1-15e1-4a73-a49a-0d1c8b7665a6" width="300"/>
 </p>
 <p align="center"><em>Hình 7-8. Giao diện thêm mới & sửa thông tin sinh viên</em></p>
 
@@ -108,8 +108,8 @@ Hệ thống hỗ trợ hai nhóm đối tượng chính:
 <p align="center"><em>Hình 9. Giao diện quản lý lớp học</em></p>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/d028bae6-d7f2-4473-bd36-021e3b6949a4" width="400"/>
-  <img src="https://github.com/user-attachments/assets/b441b16d-a22d-4540-878b-cc7e86965404" width="400"/>
+  <img src="https://github.com/user-attachments/assets/d028bae6-d7f2-4473-bd36-021e3b6949a4" width="300"/>
+  <img src="https://github.com/user-attachments/assets/b441b16d-a22d-4540-878b-cc7e86965404" width="300"/>
 </p>
 <p align="center"><em>Hình 10-11. Giao diện sửa & thêm lớp học</em></p>
 
