@@ -1,0 +1,6 @@
+INDEX VERSION 1.134+D:\LTJava\RMI\.metadata\.plugins\org.eclipse.jdt.core
+1865797976.index
+2239829135.index
+103390030.index
+28597710.index
+2411416197.index
