@@ -134,17 +134,39 @@ Hệ thống hỗ trợ hai nhóm đối tượng chính:
 <p align="center"><em>Hình 21. Giao diện bảng điểm sinh viên</em></p>
 
 
-## ⚙️ 5. Cài đặt & Cấu hình
-
-### 🔹 Bước 1: Cài đặt MySQL
-- Tải MySQL Community Edition tại: [https://dev.mysql.com/downloads/](https://dev.mysql.com/downloads/)  
-- Trong quá trình cài đặt, chọn root password (ví dụ `root/123456`).  
-- Sau khi cài, mở **MySQL Workbench** hoặc **Command Line Client** để quản lý cơ sở dữ liệu.
+Rõ rồi 👍. Mình sẽ viết lại phần **Cài đặt & Cấu hình** với flow đầy đủ, có thêm bước **cấu hình Build Path** cho thư viện `FlatLaf` và `mysql-connector` (vì bạn để sẵn trong thư mục `qlsv_rmi/lib`).
 
 ---
 
-### 🔹 Bước 2: Khởi tạo cơ sở dữ liệu
-Import file `sql/student_mgmt.sql` hoặc chạy trực tiếp script sau:
+````markdown
+## ⚙️ 5. Cài đặt & Cấu hình
+
+### 🔹 Bước 1: Tải dự án về
+- Clone repository từ GitHub:  
+```bash
+git clone https://github.com/huuhuy2910/Network-Programming.git
+cd Network-Programming/BT2/qlsv_rmi
+````
+
+* Hoặc tải file `.zip` dự án về máy, sau đó giải nén và mở trong **Eclipse/IntelliJ IDEA**.
+
+---
+
+### 🔹 Bước 2: Thêm thư viện vào Build Path
+
+1. Trong Eclipse, click chuột phải vào project `qlsv_rmi` → **Properties**.
+2. Chọn **Java Build Path** → tab **Libraries**.
+3. Nhấn **Add JARs…**, chọn 2 file sau trong thư mục `qlsv_rmi/lib`:
+
+   * `flatlaf-xxx.jar` (thư viện giao diện FlatLaf)
+   * `mysql-connector-j-8.0.xx.jar` (thư viện kết nối MySQL)
+4. Nhấn **Apply and Close** để lưu cấu hình.
+
+---
+
+### 🔹 Bước 3: Khởi tạo cơ sở dữ liệu
+
+Import file `sql/student_mgmt.sql` hoặc chạy script sau trong MySQL:
 
 ```sql
 DROP DATABASE IF EXISTS student_mgmt;
@@ -201,38 +223,51 @@ INSERT INTO users (username, password, role) VALUES
 
 ---
 
-### 🔹 Bước 3: Cấu hình kết nối DB trong code
+### 🔹 Bước 4: Cấu hình kết nối DB trong code
+
 Mở file `DBConnection.java` và chỉnh lại theo thông tin MySQL của bạn:
 
 ```java
 private static final String URL = "jdbc:mysql://localhost:3306/student_mgmt";
-private static final String USER = "root";          // user MySQL
-private static final String PASS = "123456";        // password MySQL
+private static final String USER = "root";     // user MySQL
+private static final String PASS = "123456";   // password MySQL
 ```
 
 ---
 
-### 🔹 Bước 4: Chạy Server
-1. Mở **Eclipse/IntelliJ IDEA**.  
-2. Import project `qlsv_rmi`.  
-3. Vào package `server`, mở file **ServerApp.java**.  
-4. Nhấn **Run ▶** để khởi động server.  
+### 🔹 Bước 5: Chạy Server
 
-👉 Khi chạy thành công, Console sẽ in:  
-Server is running on port 1099...
+1. Trong Eclipse, vào package `server`.
+2. Mở file **ServerApp.java**.
+3. Nhấn **Run ▶** để khởi động server.
+   👉 Console hiển thị: `Server is running on port 1099...`
 
 ---
 
-### 🔹 Bước 5: Chạy Client
-1. Trong cùng project, vào package `client`.  
-2. Mở file **ClientApp.java**.  
-3. Nhấn **Run ▶** để khởi động client.  
-4. Giao diện đăng nhập sẽ xuất hiện.  
+### 🔹 Bước 6: Chạy Client
 
-👉 Mặc định Client kết nối `localhost`.  
-Nếu server chạy trên máy khác (ví dụ `192.168.1.10`), hãy chỉnh IP trong code `ClientApp` trước khi chạy.
+1. Trong Eclipse, vào package `client`.
+2. Mở file **ClientApp.java**.
+3. Nhấn **Run ▶** để khởi động client.
+   👉 Giao diện đăng nhập sẽ xuất hiện.
+
+Mặc định client kết nối `localhost`.
+Nếu server chạy trên máy khác (ví dụ `192.168.1.10`), chỉnh IP trong `ClientApp` trước khi chạy.
+
+```
 
 ---
+
+📌 FLow như sau:  
+1. Tải dự án  
+2. Thêm lib vào Build Path (`flatlaf` + `mysql-connector`)  
+3. Khởi tạo DB  
+4. Cấu hình DBConnection  
+5. Run ServerApp  
+6. Run ClientApp  
+
+```
+
 
 ## 👨‍💻 6. Thông tin liên hệ
 
