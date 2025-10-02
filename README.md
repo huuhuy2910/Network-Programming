@@ -133,12 +133,8 @@ Hệ thống hỗ trợ hai nhóm đối tượng chính:
 </p>
 <p align="center"><em>Hình 21. Giao diện bảng điểm sinh viên</em></p>
 
-
-Rõ rồi 👍. Mình sẽ viết lại phần **Cài đặt & Cấu hình** với flow đầy đủ, có thêm bước **cấu hình Build Path** cho thư viện `FlatLaf` và `mysql-connector` (vì bạn để sẵn trong thư mục `qlsv_rmi/lib`).
-
 ---
 
-````markdown
 ## ⚙️ 5. Cài đặt & Cấu hình
 
 ### 🔹 Bước 1: Tải dự án về
